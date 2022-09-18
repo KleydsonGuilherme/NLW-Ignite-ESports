@@ -12,12 +12,13 @@ import { styles } from './styles';
 import { THEME } from '../../theme';
 
 import { Heading } from '../../components/Heading';
+import { DuoMatch } from '../../components/DuoMatch';
 import { Background } from '../../components/Background';
 import { DuoCard, DuoCardProps } from '../../components/DuoCard';
-import { Inter_500Medium } from '@expo-google-fonts/inter';
 
 export function Game() {
   const [duos, setDuos] = useState<DuoCardProps[]>([]);
+  const [discordDuoSelected, setDiscordDuosSelected] = useState('')
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -27,6 +28,12 @@ export function Game() {
     return(
     navigation.goBack()
   )}
+
+  async function getDiscordUser(adsId: string){
+    fetch(`http://192.168.18.7:3333/ads/${adsId}/discord`)
+    .then(response => response.json())
+    .then(data => setDiscordDuosSelected(data.discord));
+  }
 
   useEffect(() =>{
     fetch(`http://192.168.18.7:3333/games/${game.id}/ads`)
@@ -69,7 +76,10 @@ export function Game() {
             data={duos}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <DuoCard data={duos[0]} onConnect={() => {}} />
+              <DuoCard 
+                data={duos[0]} 
+                onConnect={() => getDiscordUser(item.id)} 
+              />
             )}
             horizontal
             style={styles.containerList}
@@ -80,6 +90,11 @@ export function Game() {
                 Não há anúcios publicados ainda.
               </Text>
             )}
+          />
+          <DuoMatch
+            visible={discordDuoSelected.length > 0}
+            discord={discordDuoSelected}
+            onClose={() => setDiscordDuosSelected('')}
           />
         </SafeAreaView>
     </Background>
